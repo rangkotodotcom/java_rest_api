@@ -1,0 +1,1 @@
+2025-10-27T10:26:38.556170400Z | 0.37097 | system | POST | /helper/aes/encrypt | 200 | {"data":{"username":"rangkoto","password":"sBA30oPWNIEToWtq2sXEN8ORUb6sU0fp"}} | {"encrypted":"RCtYMmMyQmtYSUVyWTdNVXF0WSt5emVxU3FUZC9JSHJRTVdPVVdVb1g3T1RoV2JoTWphY0ZyQmR3UktqZ3IyWkNzRERQZmRrRUc5ME9IUnJQR3dSeFIyMW05WFl1U0xxMUMxd3lxZStpWmc9OjpySFYzTk52S280MmF6RTZYaExkZjhnPT0="}
