@@ -42,6 +42,7 @@ public class JwtUtil {
      * Generate Global Token
      */
     public String generateGlobalToken(String subject, Map<String, Object> claims) {
+        claims.put("sub", subject);
         return generateToken(subject, claims, GLOBAL_TOKEN_EXP_MS, globalKey);
     }
 
@@ -166,5 +167,24 @@ public class JwtUtil {
         GLOBAL,
         ACCESS,
         REFRESH
+    }
+
+    /**
+     * Get ExpiresIn berdasarkan token type
+     */
+    public Long getExpiresIn(TokenType type) {
+        return switch (type) {
+            case GLOBAL -> GLOBAL_TOKEN_EXP_MS;
+            case ACCESS -> ACCESS_TOKEN_EXP_MS;
+            case REFRESH -> REFRESH_TOKEN_EXP_MS;
+        };
+    }
+
+    /**
+     * Get ExpiresIn berdasarkan token type
+     */
+    public Long getExpiresInSeconds(TokenType type) {
+        Long expiresInMs = getExpiresIn(type);
+        return expiresInMs / 1000;
     }
 }

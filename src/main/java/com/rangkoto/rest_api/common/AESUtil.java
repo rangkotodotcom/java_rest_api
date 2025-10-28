@@ -2,6 +2,7 @@ package com.rangkoto.rest_api.common;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rangkoto.rest_api.exception.CustomIllegalArgumentException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -24,7 +25,7 @@ public class AESUtil {
             @Value("${aes.key}") String key,
             @Value("${aes.cipher:AES/CBC/PKCS5Padding}") String cipher
     ) throws Exception {
-        if (key == null || key.isEmpty()) throw new IllegalArgumentException("AES key is required");
+        if (key == null || key.isEmpty()) throw new CustomIllegalArgumentException("AES key is required");
         this.cipherAlgorithm = cipher;
 
         // Hash key ke 32 bytes (AES-256)
@@ -38,7 +39,7 @@ public class AESUtil {
     }
 
     public String encrypt(Object data, byte[] key, byte[] iv) throws Exception {
-        if (data == null) throw new IllegalArgumentException("Data is null");
+        if (data == null) throw new CustomIllegalArgumentException("Input data is null");
 
         byte[] jsonBytes = objectMapper.writeValueAsBytes(data);
 
@@ -65,12 +66,12 @@ public class AESUtil {
     }
 
     public <T> T decrypt(String data, byte[] key, TypeReference<T> typeRef) throws Exception {
-        if (data == null || data.isEmpty()) throw new IllegalArgumentException("Encrypted data is null");
+        if (data == null || data.isEmpty()) throw new CustomIllegalArgumentException("Encrypted data is null");
 
         // Decode outer Base64
         String decoded = new String(Base64.getDecoder().decode(data), StandardCharsets.UTF_8);
 
-        if (!decoded.contains("::")) throw new IllegalArgumentException("Invalid encrypted data format");
+        if (!decoded.contains("::")) throw new CustomIllegalArgumentException("Invalid encrypted data format");
         String[] parts = decoded.split("::");
 
         byte[] encrypted = Base64.getDecoder().decode(parts[0]);
@@ -89,7 +90,7 @@ public class AESUtil {
 
     // ================= Enkripsi String =================
     public String encryptString(String plainText) throws Exception {
-        if (plainText == null) throw new IllegalArgumentException("Input string is null");
+        if (plainText == null) throw new CustomIllegalArgumentException("Input string is null");
         byte[] ivBytes = new byte[16];
         new SecureRandom().nextBytes(ivBytes);
 
@@ -109,7 +110,7 @@ public class AESUtil {
     // ================= Dekripsi String =================
     public String decryptString(String encryptedText) throws Exception {
         if (encryptedText == null || !encryptedText.contains("::"))
-            throw new IllegalArgumentException("Invalid encrypted string format");
+            throw new CustomIllegalArgumentException("Invalid encrypted string format");
 
         String[] parts = encryptedText.split("::");
         byte[] encrypted = Base64.getDecoder().decode(parts[0]);

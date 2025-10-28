@@ -26,16 +26,21 @@ public class ApiResponse<T> {
     private long timestamp;
 
     // Factory methods
-    public static <T> ApiResponse<T> success(T data, String message) {
+    public static <T> ApiResponse<T> success(int code, T data, String message) {
         return ApiResponse.<T>builder()
                 .req_id(UUID.randomUUID().toString().toUpperCase())
                 .srv_id("SRV-REST-01")
                 .status(true)
-                .code(200)
+                .code(code)
                 .data(data)
                 .message(message)
                 .timestamp(Instant.now().toEpochMilli())
                 .build();
+    }
+
+    // Success dengan default code 200
+    public static <T> ApiResponse<T> success(T data, String message) {
+        return success(200, data, message);
     }
 
     // Error dengan kode custom

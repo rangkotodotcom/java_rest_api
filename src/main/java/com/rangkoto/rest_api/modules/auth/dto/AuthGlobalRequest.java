@@ -1,16 +1,14 @@
-package com.rangkoto.rest_api.modules.helper.dto;
+package com.rangkoto.rest_api.modules.auth.dto;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.Map;
-
 @Data
 @Getter
 @Setter
-public class EncryptRequest {
+public class AuthGlobalRequest {
     @NotNull(message = "'data' field must not be null")
-    private Map<String, Object> data;
+    private String data;
 }
