@@ -1,6 +1,6 @@
 package com.rangkoto.rest_api.security;
 
-import com.rangkoto.rest_api.modules.user.dto.UserDto;
+import com.rangkoto.rest_api.modules.user.dto.UserJwt;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,9 +10,12 @@ import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 @Component
 public class JwtUtil {
+
+    private final String issuer;
 
     private final SecretKey globalKey;
     private final SecretKey accessKey;
@@ -23,6 +26,7 @@ public class JwtUtil {
     private final long REFRESH_TOKEN_EXP_MS;
 
     public JwtUtil(
+            @Value("${jwt.issuer}") String issuer,
             @Value("${jwt.global-secret}") String globalSecret,
             @Value("${jwt.access-secret}") String accessSecret,
             @Value("${jwt.refresh-secret}") String refreshSecret,
@@ -30,6 +34,7 @@ public class JwtUtil {
             @Value("${jwt.access-token-exp-ms:900000}") long accessTokenExpMs,      // default 15 menit
             @Value("${jwt.refresh-token-exp-ms:604800000}") long refreshTokenExpMs  // default 7 hari
     ) {
+        this.issuer = issuer;
         this.globalKey = Keys.hmacShaKeyFor(globalSecret.getBytes());
         this.accessKey = Keys.hmacShaKeyFor(accessSecret.getBytes());
         this.refreshKey = Keys.hmacShaKeyFor(refreshSecret.getBytes());
@@ -49,11 +54,12 @@ public class JwtUtil {
     /**
      * Generate Access Token
      */
-    public String generateAccessToken(String username, UserDto userDto) {
+    public String generateAccessToken(String username, UserJwt userJwt) {
         Map<String, Object> claims = new HashMap<>();
-        if (userDto != null) {
-            claims.put("email", userDto.getEmail());
-            claims.put("roles", userDto.getRoles());
+        if (userJwt != null) {
+            claims.put("email", userJwt.getEmail());
+            claims.put("roles", userJwt.getRoles());
+            claims.put("user", userJwt);
         }
         return generateToken(username, claims, ACCESS_TOKEN_EXP_MS, accessKey);
     }
@@ -61,11 +67,12 @@ public class JwtUtil {
     /**
      * Generate Refresh Token
      */
-    public String generateRefreshToken(String username, UserDto userDto) {
+    public String generateRefreshToken(String username, UserJwt userJwt) {
         Map<String, Object> claims = new HashMap<>();
-        if (userDto != null) {
-            claims.put("email", userDto.getEmail());
-            claims.put("roles", userDto.getRoles());
+        if (userJwt != null) {
+            claims.put("email", userJwt.getEmail());
+            claims.put("roles", userJwt.getRoles());
+            claims.put("user", userJwt);
         }
         return generateToken(username, claims, REFRESH_TOKEN_EXP_MS, refreshKey);
     }
@@ -76,18 +83,21 @@ public class JwtUtil {
     private String generateToken(String subject, Map<String, Object> claims, long expirationMs, SecretKey key) {
         if (claims == null) claims = new HashMap<>();
         return Jwts.builder()
+                .setHeaderParam("typ", "JWT")
                 .setSubject(subject)
                 .setClaims(claims)
                 .setIssuedAt(new Date())
+                .setIssuer(issuer)
+                .setId(UUID.randomUUID().toString())
                 .setExpiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(key)
                 .compact();
     }
 
     /**
-     * Extract username / subject
+     * Extract subject
      */
-    public String extractUsername(String token, TokenType type) {
+    public String extractSubject(String token, TokenType type) {
         return extractAllClaims(token, type).getSubject();
     }
 
@@ -103,7 +113,7 @@ public class JwtUtil {
                 .getBody();
     }
 
-    public UserDto extractUserDto(String token, TokenType type) {
+    public UserJwt extractUserJwt(String token, TokenType type) {
         SecretKey key = getKey(type);
         Claims claims = Jwts.parserBuilder()
                 .setSigningKey(key)
@@ -111,30 +121,30 @@ public class JwtUtil {
                 .parseClaimsJws(token)
                 .getBody();
 
-        String email = claims.get("email", String.class);
-        @SuppressWarnings("unchecked")
-        var roles = (java.util.List<String>) claims.get("roles");
-
-        return new UserDto(email, roles);
+        return claims.get("user", UserJwt.class);
+//        @SuppressWarnings("unchecked")
+//        var roles = (java.util.List<String>) claims.get("roles");
+//
+//        return new UserJwt();
     }
 
     /**
      * Validate token
      */
-    public boolean validateToken(String token, TokenType type) {
+    public boolean isInvalidToken(String token, TokenType type) {
         try {
             SecretKey key = getKey(type);
             Jwts.parserBuilder()
                     .setSigningKey(key)
                     .build()
                     .parseClaimsJws(token);
-            return true;
+            return false;
         } catch (ExpiredJwtException e) {
             System.out.println(type + " token expired: " + e.getMessage());
         } catch (JwtException e) {
             System.out.println(type + " token invalid: " + e.getMessage());
         }
-        return false;
+        return true;
     }
 
     /**

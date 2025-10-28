@@ -19,9 +19,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @NonNullApi
 @Component
@@ -60,22 +58,22 @@ public class JwtAccessFilter extends OncePerRequestFilter {
                 return;
             }
             token = token.substring(7);
-            if (!jwtUtil.validateToken(token, JwtUtil.TokenType.ACCESS)) {
+            if (jwtUtil.isInvalidToken(token, JwtUtil.TokenType.ACCESS)) {
                 sendError(response, "Invalid access token");
                 return;
             }
 
-            var userDto = jwtUtil.extractUserDto(token, JwtUtil.TokenType.ACCESS);
+            var userJwt = jwtUtil.extractUserJwt(token, JwtUtil.TokenType.ACCESS);
             var claims = jwtUtil.extractAllClaims(token, JwtUtil.TokenType.ACCESS);
-            request.setAttribute("user", userDto);
+            request.setAttribute("user", userJwt);
             request.setAttribute("access", claims);
 
             // Buat Authentication token
             UsernamePasswordAuthenticationToken authToken =
                     new UsernamePasswordAuthenticationToken(
-                            userDto,       // principal
+                            userJwt,       // principal
                             null,          // credentials (tidak perlu)
-                            userDto.getRoles().stream()
+                            userJwt.getRoles().stream()
                                     .map(SimpleGrantedAuthority::new)
                                     .toList()   // authorities
                     );

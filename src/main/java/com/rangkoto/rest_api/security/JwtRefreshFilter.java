@@ -46,7 +46,7 @@ public class JwtRefreshFilter extends OncePerRequestFilter {
 
         if (requiresToken) {
             String token = request.getHeader("x-refresh-token");
-            if (token == null || !jwtUtil.validateToken(token, JwtUtil.TokenType.REFRESH)) {
+            if (token == null || jwtUtil.isInvalidToken(token, JwtUtil.TokenType.REFRESH)) {
                 sendError(response);
                 return;
             }

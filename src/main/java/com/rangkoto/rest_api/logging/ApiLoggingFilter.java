@@ -17,8 +17,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @NonNullApi
@@ -45,7 +45,7 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
         String requestBody = new String(wrappedRequest.getContentAsByteArray(), StandardCharsets.UTF_8);
         String responseBody = new String(wrappedResponse.getContentAsByteArray(), StandardCharsets.UTF_8);
 
-        // Normalisasi JSON agar single line
+        
         requestBody = normalizeJson(requestBody);
         responseBody = normalizeJson(responseBody);
 
@@ -70,7 +70,7 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
 
         String logLine = String.format(
                 "%s | %.5f | %s | %s | %s | %d | %s | %s%n",
-                Instant.now(),
+                LocalDateTime.now(),
                 duration,
                 createdBy,
                 request.getMethod(),
@@ -90,7 +90,6 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
             JsonNode tree = objectMapper.readTree(json);
             return objectMapper.writeValueAsString(tree); // single line
         } catch (Exception e) {
-            // Kalau bukan JSON, kembalikan apa adanya
             return json;
         }
     }

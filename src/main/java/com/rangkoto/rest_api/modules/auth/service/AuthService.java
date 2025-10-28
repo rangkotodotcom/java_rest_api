@@ -29,6 +29,7 @@ public class AuthService {
             Map<String, Object> auth = new HashMap<>();
             auth.put("username", inputUser);
             auth.put("channel", "web");
+            auth.put("aud", "rangkoto.com");
             return Optional.of(auth);
         }
 
@@ -46,6 +47,7 @@ public class AuthService {
             Map<String, Object> auth = new HashMap<>();
             auth.put("username", inputUser);
             auth.put("channel", "mobile");
+            auth.put("aud", "com.rangkoto.mobile");
             return Optional.of(auth);
         }
 

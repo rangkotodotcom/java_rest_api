@@ -53,7 +53,7 @@ public class JwtGlobalFilter extends OncePerRequestFilter {
 
         if (requiresGlobalToken) {
             String token = request.getHeader("x-global-token");
-            if (token == null || !jwtUtil.validateToken(token, JwtUtil.TokenType.GLOBAL)) {
+            if (token == null || jwtUtil.isInvalidToken(token, JwtUtil.TokenType.GLOBAL)) {
                 sendError(response);
                 return;
             }
