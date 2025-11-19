@@ -54,7 +54,7 @@ public class AuthController {
             return ResponseEntity.ok(apiResponse);
         }
 
-        Map<String, Object> res = authService.createToken(authResult.get());
+        Map<String, Object> res = authService.createTokenGlobal(authResult.get());
 
         ApiResponse<Map<String, Object>> apiResponse = responseFactory.success(res, "Success");
         return ResponseEntity.ok(apiResponse);
@@ -85,7 +85,7 @@ public class AuthController {
             return ResponseEntity.ok(apiResponse);
         }
 
-        Map<String, Object> res = authService.createToken(authResult.get());
+        Map<String, Object> res = authService.createTokenGlobal(authResult.get());
 
         ApiResponse<Map<String, Object>> apiResponse = responseFactory.success(res, "Success");
         return ResponseEntity.ok(apiResponse);

@@ -43,6 +43,7 @@ public class AuthService {
         if (username.equals(inputUser) && password.equals(inputPass)) {
             Map<String, Object> auth = new HashMap<>();
             auth.put("usr", inputUser);
+            auth.put("sub", inputUser);
             auth.put("chn", "web");
             auth.put("aud", "rangkoto.com");
             return Optional.of(auth);
@@ -130,6 +131,7 @@ public class AuthService {
         if (username.equals(inputUser) && password.equals(inputPass)) {
             Map<String, Object> auth = new HashMap<>();
             auth.put("usr", inputUser);
+            auth.put("sub", inputUser);
             auth.put("chn", "mobile");
             auth.put("aud", "com.rangkoto.mobile");
             return Optional.of(auth);
@@ -138,7 +140,7 @@ public class AuthService {
         return Optional.empty();
     }
 
-    public Map<String, Object> createToken(Map<String, Object> payload) {
+    public Map<String, Object> createTokenGlobal(Map<String, Object> payload) {
         String token = jwtUtil.generateGlobalToken((String) payload.get("username"), payload);
         Long expiresIn = jwtUtil.getExpiresInSeconds(JwtUtil.TokenType.GLOBAL);
 
