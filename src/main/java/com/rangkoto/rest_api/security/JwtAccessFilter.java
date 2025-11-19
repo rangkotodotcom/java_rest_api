@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.rangkoto.rest_api.common.ApiResponse;
+import com.rangkoto.rest_api.common.ApiResponseFactory;
 import io.micrometer.common.lang.NonNullApi;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -34,8 +35,11 @@ public class JwtAccessFilter extends OncePerRequestFilter {
     );
     private final AntPathMatcher matcher = new AntPathMatcher();
 
-    public JwtAccessFilter(JwtUtil jwtUtil) {
+    private final ApiResponseFactory responseFactory;
+
+    public JwtAccessFilter(JwtUtil jwtUtil, ApiResponseFactory responseFactory) {
         this.jwtUtil = jwtUtil;
+        this.responseFactory = responseFactory;
         this.mapper = new ObjectMapper();
         this.mapper.registerModule(new JavaTimeModule());
         mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
@@ -48,8 +52,10 @@ public class JwtAccessFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        String path = request.getRequestURI();
+
         boolean requiresToken = ACCESS_TOKEN_PATHS.stream()
-                .anyMatch(p -> matcher.match(p, request.getRequestURI()));
+                .anyMatch(p -> matcher.match(p, path));
 
         if (requiresToken) {
             String token = request.getHeader("Authorization");
@@ -92,7 +98,7 @@ public class JwtAccessFilter extends OncePerRequestFilter {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
 
-        ApiResponse<Object> apiResponse = ApiResponse.error(
+        ApiResponse<Object> apiResponse = responseFactory.error(
                 2,
                 message,
                 "Unauthorized"

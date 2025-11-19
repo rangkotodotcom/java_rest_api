@@ -9,55 +9,18 @@ import lombok.NoArgsConstructor;
 import java.time.Instant;
 import java.util.UUID;
 
-
+@Data // bikin getter + setter + toString + equals/hashcode
 @Builder
-@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
-    private String req_id; // unique per request
-    private String srv_id; // static server id
+    private String req_id;
+    private String srv_id;
     private boolean status;
     private int code;
-    private Object error; // bisa object atau array of object
-    private T data; // bisa object atau list
+    private Object error; // masih private, tapi @Data bikin setter/getter
+    private T data;
     private String message;
     private long timestamp;
-
-    // Factory methods
-    public static <T> ApiResponse<T> success(int code, T data, String message) {
-        return ApiResponse.<T>builder()
-                .req_id(UUID.randomUUID().toString().toUpperCase())
-                .srv_id("SRV-REST-01")
-                .status(true)
-                .code(code)
-                .data(data)
-                .message(message)
-                .timestamp(Instant.now().toEpochMilli())
-                .build();
-    }
-
-    // Success dengan default code 200
-    public static <T> ApiResponse<T> success(T data, String message) {
-        return success(200, data, message);
-    }
-
-    // Error dengan kode custom
-    public static <T> ApiResponse<T> error(int code, String message, Object errorDetail) {
-        return ApiResponse.<T>builder()
-                .req_id(UUID.randomUUID().toString().toUpperCase())
-                .srv_id("SRV-REST-01")
-                .status(false)
-                .code(code)
-                .error(errorDetail)
-                .message(message)
-                .timestamp(Instant.now().toEpochMilli())
-                .build();
-    }
-
-    // Error dengan default code 400
-    public static <T> ApiResponse<T> error(String message, Object errorDetail) {
-        return error(400, message, errorDetail);
-    }
 }

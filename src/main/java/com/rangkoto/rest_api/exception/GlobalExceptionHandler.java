@@ -1,6 +1,7 @@
 package com.rangkoto.rest_api.exception;
 
 import com.rangkoto.rest_api.common.ApiResponse;
+import com.rangkoto.rest_api.common.ApiResponseFactory;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,10 +23,16 @@ import java.util.stream.Collectors;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    private final ApiResponseFactory responseFactory;
+
+    public GlobalExceptionHandler(ApiResponseFactory responseFactory) {
+        this.responseFactory = responseFactory;
+    }
+
     // 404 Not Found
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<ApiResponse<Object>> handleNotFound(NoHandlerFoundException ex, HttpServletRequest request) {
-        ApiResponse<Object> response = ApiResponse.error(
+        ApiResponse<Object> response = responseFactory.error(
                 404,
                 "Resource not found",
                 "Path " + request.getRequestURI() + " not found"
@@ -36,7 +43,7 @@ public class GlobalExceptionHandler {
     // 403 Forbidden
     @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
     public ResponseEntity<ApiResponse<Object>> handleForbidden(Exception ex, HttpServletRequest request) {
-        ApiResponse<Object> response = ApiResponse.error(
+        ApiResponse<Object> response = responseFactory.error(
                 403,
                 "Forbidden",
                 "You do not have permission to access " + request.getRequestURI()
@@ -52,7 +59,7 @@ public class GlobalExceptionHandler {
                 .append(" method is not supported for this request. Supported methods are: ");
         Objects.requireNonNull(ex.getSupportedHttpMethods())
                 .forEach(t -> msg.append(t).append(" "));
-        ApiResponse<Object> response = ApiResponse.error(
+        ApiResponse<Object> response = responseFactory.error(
                 405,
                 "Method Not Allowed",
                 msg.toString().trim()
@@ -71,20 +78,20 @@ public class GlobalExceptionHandler {
                         fe -> Optional.ofNullable(fe.getDefaultMessage()).orElse("Invalid value"),
                         (existing, replacement) -> existing
                 ));
-        ApiResponse<Object> response = ApiResponse.error(422, "Validation Failed", errors);
+        ApiResponse<Object> response = responseFactory.error(422, "Validation Failed", errors);
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(response);
     }
 
     @ExceptionHandler(FieldValidationException.class)
     public ResponseEntity<ApiResponse<Object>> handleFieldValidation(FieldValidationException ex) {
-        ApiResponse<Object> response = ApiResponse.error(400, "Bad Request", ex.getErrors());
+        ApiResponse<Object> response = responseFactory.error(400, "Bad Request", ex.getErrors());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     // ================= Illegal Argument =================
     @ExceptionHandler(CustomIllegalArgumentException.class)
     public ResponseEntity<ApiResponse<Object>> handleIllegalArgument(CustomIllegalArgumentException ex) {
-        ApiResponse<Object> response = ApiResponse.error(
+        ApiResponse<Object> response = responseFactory.error(
                 ex.getCode(),
                 "Bad Request",
                 ex.getMessage()
@@ -111,7 +118,7 @@ public class GlobalExceptionHandler {
                 ex.getParameterName(), "Parameter is required"
         );
 
-        ApiResponse<Object> response = ApiResponse.error(
+        ApiResponse<Object> response = responseFactory.error(
                 400,
                 "Bad Request",
                 error
@@ -126,7 +133,7 @@ public class GlobalExceptionHandler {
                 ex.getName(), "Invalid value: " + ex.getValue()
         );
 
-        ApiResponse<Object> response = ApiResponse.error(
+        ApiResponse<Object> response = responseFactory.error(
                 400,
                 "Bad Request",
                 error
@@ -138,14 +145,14 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiResponse<Object>> handleMissingRequestBody(HttpMessageNotReadableException ex) {
         Map<String, String> error = Map.of("request_body", "Request body is missing or invalid");
-        ApiResponse<Object> response = ApiResponse.error(400, "Bad Request", error);
+        ApiResponse<Object> response = responseFactory.error(400, "Bad Request", error);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     // 500 Internal Server Error (fallback)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleException(Exception ex, HttpServletRequest request) {
-        ApiResponse<Object> response = ApiResponse.error(500, "Internal server error", ex.getMessage());
+        ApiResponse<Object> response = responseFactory.error(500, "Internal server error", ex.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 }

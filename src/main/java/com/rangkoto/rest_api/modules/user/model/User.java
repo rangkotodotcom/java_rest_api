@@ -31,7 +31,8 @@ public class User {
     private String password;
 
     @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
+//    @Column(columnDefinition = "jsonb")
+    @Column(columnDefinition = "json")
     private List<String> roles;
 
     // Audit

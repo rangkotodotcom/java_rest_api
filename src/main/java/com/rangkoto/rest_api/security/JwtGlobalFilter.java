@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.rangkoto.rest_api.common.ApiResponse;
+import com.rangkoto.rest_api.common.ApiResponseFactory;
 import io.micrometer.common.lang.NonNullApi;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
@@ -24,8 +25,11 @@ public class JwtGlobalFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
 
-    public JwtGlobalFilter(JwtUtil jwtUtil) {
+    private final ApiResponseFactory responseFactory;
+
+    public JwtGlobalFilter(JwtUtil jwtUtil, ApiResponseFactory responseFactory) {
         this.jwtUtil = jwtUtil;
+        this.responseFactory = responseFactory;
         this.mapper = new ObjectMapper();
         this.mapper.registerModule(new JavaTimeModule());
         mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
@@ -35,9 +39,10 @@ public class JwtGlobalFilter extends OncePerRequestFilter {
     private final AntPathMatcher matcher = new AntPathMatcher();
 
     private static final List<String> GLOBAL_TOKEN_PATHS = List.of(
-            "/info/",
-            "/public/",
-            "/auth/user"
+            "/landing/**",
+            "/auth/login",
+            "/auth/register",
+            "/auth/forgot-password"
     );
 
     @Override
@@ -49,7 +54,7 @@ public class JwtGlobalFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
 
         boolean requiresGlobalToken = GLOBAL_TOKEN_PATHS.stream()
-                .anyMatch(p -> matcher.match(p, request.getRequestURI()));
+                .anyMatch(p -> matcher.match(p, path));
 
         if (requiresGlobalToken) {
             String token = request.getHeader("x-global-token");
@@ -68,7 +73,7 @@ public class JwtGlobalFilter extends OncePerRequestFilter {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
 
-        ApiResponse<Object> apiResponse = ApiResponse.error(
+        ApiResponse<Object> apiResponse = responseFactory.error(
                 0,
                 "Invalid or missing global token",
                 "Unauthorized"

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.rangkoto.rest_api.common.ApiResponse;
+import com.rangkoto.rest_api.common.ApiResponseFactory;
 import io.micrometer.common.lang.NonNullApi;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
@@ -27,8 +28,11 @@ public class JwtRefreshFilter extends OncePerRequestFilter {
     );
     private final AntPathMatcher matcher = new AntPathMatcher();
 
-    public JwtRefreshFilter(JwtUtil jwtUtil) {
+    private final ApiResponseFactory responseFactory;
+
+    public JwtRefreshFilter(JwtUtil jwtUtil, ApiResponseFactory responseFactory) {
         this.jwtUtil = jwtUtil;
+        this.responseFactory = responseFactory;
         this.mapper = new ObjectMapper();
         this.mapper.registerModule(new JavaTimeModule());
         mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
@@ -41,8 +45,10 @@ public class JwtRefreshFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        String path = request.getRequestURI();
+
         boolean requiresToken = REFRESH_TOKEN_PATHS.stream()
-                .anyMatch(p -> matcher.match(p, request.getRequestURI()));
+                .anyMatch(p -> matcher.match(p, path));
 
         if (requiresToken) {
             String token = request.getHeader("x-refresh-token");
@@ -61,7 +67,7 @@ public class JwtRefreshFilter extends OncePerRequestFilter {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
 
-        ApiResponse<Object> apiResponse = ApiResponse.error(
+        ApiResponse<Object> apiResponse = responseFactory.error(
                 3,
                 "Invalid or missing refresh token",
                 "Unauthorized"

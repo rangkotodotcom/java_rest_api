@@ -30,7 +30,7 @@ public class JwtUtil {
             @Value("${jwt.global-secret}") String globalSecret,
             @Value("${jwt.access-secret}") String accessSecret,
             @Value("${jwt.refresh-secret}") String refreshSecret,
-            @Value("${jwt.global-token-exp-ms:3600000}") long globalTokenExpMs,    // default 1 jam
+            @Value("${jwt.global-token-exp-ms:86400000}") long globalTokenExpMs,    // default 1 hari
             @Value("${jwt.access-token-exp-ms:900000}") long accessTokenExpMs,      // default 15 menit
             @Value("${jwt.refresh-token-exp-ms:604800000}") long refreshTokenExpMs  // default 7 hari
     ) {

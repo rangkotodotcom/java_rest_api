@@ -1,6 +1,7 @@
 package com.rangkoto.rest_api.modules.auth.controller;
 
 import com.rangkoto.rest_api.common.ApiResponse;
+import com.rangkoto.rest_api.common.ApiResponseFactory;
 import com.rangkoto.rest_api.modules.auth.dto.LoginRequest;
 import com.rangkoto.rest_api.modules.user.model.User;
 import com.rangkoto.rest_api.modules.user.service.UserService;
@@ -18,9 +19,11 @@ import java.util.Optional;
 @RequestMapping("/auth/user")
 public class AuthUserController {
     private final UserService userService;
+    private final ApiResponseFactory responseFactory;
 
-    public AuthUserController(UserService userService) {
+    public AuthUserController(UserService userService, ApiResponseFactory responseFactory) {
         this.userService = userService;
+        this.responseFactory = responseFactory;
     }
 
     @PostMapping("/login")
@@ -32,9 +35,9 @@ public class AuthUserController {
 
         if (userOpt.isPresent()) {
             User user = userOpt.get();
-            user.setPassword(null); // ⚠️ Jangan kirim password ke client!
+            user.setPassword(null);
 
-            ApiResponse<User> apiResponse = ApiResponse.success(
+            ApiResponse<User> apiResponse = responseFactory.success(
                     user,
                     "Login successful"
             );
@@ -42,8 +45,8 @@ public class AuthUserController {
             return ResponseEntity.ok(apiResponse);
         }
 
-        ApiResponse<Object> apiResponse = ApiResponse.error(
-                101, // kode 401
+        ApiResponse<Object> apiResponse = responseFactory.error(
+                101,
                 "Invalid username/email or password",
                 null
         );

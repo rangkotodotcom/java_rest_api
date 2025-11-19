@@ -1,6 +1,7 @@
 package com.rangkoto.rest_api.modules.auth.controller;
 
 import com.rangkoto.rest_api.common.ApiResponse;
+import com.rangkoto.rest_api.common.ApiResponseFactory;
 import com.rangkoto.rest_api.modules.auth.dto.AuthGlobalRequest;
 import com.rangkoto.rest_api.modules.auth.service.AuthService;
 import com.rangkoto.rest_api.modules.helper.service.HelperAESService;
@@ -20,18 +21,20 @@ import java.util.Optional;
 public class AuthController {
     private final AuthService authService;
     private final HelperAESService helperAESService;
+    private final ApiResponseFactory responseFactory;
 
-    public AuthController(AuthService authService, HelperAESService helperAESService) {
+    public AuthController(AuthService authService, HelperAESService helperAESService, ApiResponseFactory responseFactory) {
         this.authService = authService;
         this.helperAESService = helperAESService;
+        this.responseFactory = responseFactory;
     }
 
     @PostMapping("/web")
-    public ResponseEntity<ApiResponse<?>> login(@Valid @RequestBody AuthGlobalRequest authGlobalRequest) throws Exception {
+    public ResponseEntity<ApiResponse<?>> loginWeb(@Valid @RequestBody AuthGlobalRequest authGlobalRequest) throws Exception {
         Map<String, Object> payload = helperAESService.decryptData(authGlobalRequest.getData());
 
         if (payload.isEmpty()) {
-            ApiResponse<Object> apiResponse = ApiResponse.error(
+            ApiResponse<Object> apiResponse = responseFactory.error(
                     0,
                     "Invalid data credential",
                     null
@@ -43,7 +46,7 @@ public class AuthController {
         Optional<Map<String, Object>> authResult = authService.authWeb(payload);
 
         if (authResult.isEmpty()) {
-            ApiResponse<Map<String, String>> apiResponse = ApiResponse.error(
+            ApiResponse<Map<String, String>> apiResponse = responseFactory.error(
                     1,
                     null,
                     "Invalid data credential"
@@ -53,8 +56,38 @@ public class AuthController {
 
         Map<String, Object> res = authService.createToken(authResult.get());
 
-        ApiResponse<Map<String, Object>> apiResponse = ApiResponse.success(res, "Success");
+        ApiResponse<Map<String, Object>> apiResponse = responseFactory.success(res, "Success");
         return ResponseEntity.ok(apiResponse);
+    }
 
+    @PostMapping("/mobile")
+    public ResponseEntity<ApiResponse<?>> loginMobile(@Valid @RequestBody AuthGlobalRequest authGlobalRequest) throws Exception {
+        Map<String, Object> payload = helperAESService.decryptData(authGlobalRequest.getData());
+
+        if (payload.isEmpty()) {
+            ApiResponse<Object> apiResponse = responseFactory.error(
+                    0,
+                    "Invalid data credential",
+                    null
+            );
+
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiResponse);
+        }
+
+        Optional<Map<String, Object>> authResult = authService.authMobile(payload);
+
+        if (authResult.isEmpty()) {
+            ApiResponse<Map<String, String>> apiResponse = responseFactory.error(
+                    1,
+                    null,
+                    "Invalid data credential"
+            );
+            return ResponseEntity.ok(apiResponse);
+        }
+
+        Map<String, Object> res = authService.createToken(authResult.get());
+
+        ApiResponse<Map<String, Object>> apiResponse = responseFactory.success(res, "Success");
+        return ResponseEntity.ok(apiResponse);
     }
 }

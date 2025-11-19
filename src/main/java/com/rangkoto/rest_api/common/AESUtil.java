@@ -126,4 +126,14 @@ public class AESUtil {
         return new String(decrypted, StandardCharsets.UTF_8);
     }
 
+    public static byte[] hashKey(String key) throws Exception {
+        MessageDigest sha = MessageDigest.getInstance("SHA-256");
+        return sha.digest(key.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public static String generateRandomIV() {
+        byte[] iv = new byte[16];
+        new SecureRandom().nextBytes(iv);
+        return Base64.getEncoder().encodeToString(iv);
+    }
 }
