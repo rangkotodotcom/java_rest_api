@@ -45,7 +45,7 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
         String requestBody = new String(wrappedRequest.getContentAsByteArray(), StandardCharsets.UTF_8);
         String responseBody = new String(wrappedResponse.getContentAsByteArray(), StandardCharsets.UTF_8);
 
-        
+
         requestBody = normalizeJson(requestBody);
         responseBody = normalizeJson(responseBody);
 
@@ -105,15 +105,15 @@ public class ApiLoggingFilter extends OncePerRequestFilter {
         // 2. Cek global token
         Object globalClaims = request.getAttribute("global");
         if (globalClaims instanceof Map<?, ?> globalMap) {
-            Object username = globalMap.get("username");
-            if (username != null) return username.toString();
+            Object sub = globalMap.get("sub");
+            if (sub != null) return sub.toString();
         }
 
         // 3. Cek refresh token
         Object refreshClaims = request.getAttribute("refresh");
         if (refreshClaims instanceof Map<?, ?> refreshMap) {
-            Object username = refreshMap.get("username");
-            if (username != null) return username.toString();
+            Object sub = refreshMap.get("sub");
+            if (sub != null) return sub.toString();
         }
 
         // 4. Default

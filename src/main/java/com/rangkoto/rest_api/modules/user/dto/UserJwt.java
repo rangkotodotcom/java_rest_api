@@ -13,6 +13,5 @@ public class UserJwt {
     private String id;
     private String name;
     private String email;
-    private String username;
     private List<String> roles;
 }

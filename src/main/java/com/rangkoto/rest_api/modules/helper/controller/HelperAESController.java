@@ -30,4 +30,15 @@ public class HelperAESController {
     public Map<String, Object> decrypt(@Valid @RequestBody DecryptRequest request) throws Exception {
         return helperAESService.decryptData(request.getEncrypted());
     }
+
+    @PostMapping("/encrypt2")
+    public Map<String, String> encrypt2(@Valid @RequestBody EncryptRequest request) throws Exception {
+        String encrypted = helperAESService.encryptData2(request.getData());
+        return Map.of("encrypted", encrypted);
+    }
+
+    @PostMapping("/decrypt2")
+    public Map<String, Object> decrypt2(@Valid @RequestBody DecryptRequest request) throws Exception {
+        return helperAESService.decryptData2(request.getEncrypted());
+    }
 }

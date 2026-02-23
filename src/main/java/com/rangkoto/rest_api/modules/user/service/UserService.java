@@ -44,10 +44,7 @@ public class UserService {
 
 
     public Optional<User> authenticate(String usernameOrEmail, String rawPassword) {
-        Optional<User> userOpt = repo.findByUsername(usernameOrEmail);
-        if (userOpt.isEmpty()) {
-            userOpt = repo.findByEmail(usernameOrEmail);
-        }
+        Optional<User> userOpt = repo.findByEmail(usernameOrEmail);
 
         if (userOpt.isEmpty()) return Optional.empty();
 
@@ -58,6 +55,18 @@ public class UserService {
         } else {
             return Optional.empty();
         }
+    }
+
+    public boolean isEmailTaken(String email) {
+        return repo.existsByEmail(email);
+    }
+
+    public User register(String name, String email, String password) {
+        User user = new User();
+        user.setName(name);
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode(password));
+        return repo.save(user);
     }
 
 }

@@ -3,6 +3,7 @@ package com.rangkoto.rest_api.modules.user.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UuidGenerator;
 import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -21,12 +22,12 @@ import java.util.UUID;
 public class User {
     @Id
     @GeneratedValue
-    @Column(updatable = false, nullable = false)
-
-
+    @UuidGenerator
+    @Column(length = 32, updatable = false, nullable = false)
     private UUID id;
+
+
     private String name;
-    private String username;
     private String email;
     private String password;
 

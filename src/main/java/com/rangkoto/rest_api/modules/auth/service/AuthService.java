@@ -1,6 +1,7 @@
 package com.rangkoto.rest_api.modules.auth.service;
 
 import com.rangkoto.rest_api.config.AppProperties;
+import com.rangkoto.rest_api.modules.user.dto.UserJwt;
 import com.rangkoto.rest_api.security.JwtUtil;
 import org.springframework.stereotype.Service;
 
@@ -18,7 +19,7 @@ public class AuthService {
         this.jwtUtil = jwtUtil;
     }
 
-    public Optional<Map<String, Object>> authWeb(Map<String, Object> payload) {
+    public Optional<Map<String, Object>> authWebService(Map<String, Object> payload) {
         String username = appProperties.getWebUsername();
         String password = appProperties.getWebPassword();
 
@@ -106,7 +107,7 @@ public class AuthService {
 //    }
 
 
-    public Optional<Map<String, Object>> authMobile(Map<String, Object> payload) {
+    public Optional<Map<String, Object>> authMobileService(Map<String, Object> payload) {
         String username = appProperties.getMobileUsername();
         String password = appProperties.getMobilePassword();
 
@@ -141,12 +142,36 @@ public class AuthService {
     }
 
     public Map<String, Object> createTokenGlobal(Map<String, Object> payload) {
-        String token = jwtUtil.generateGlobalToken((String) payload.get("username"), payload);
+        String token = jwtUtil.generateGlobalToken((String) payload.get("usr"), payload);
         Long expiresIn = jwtUtil.getExpiresInSeconds(JwtUtil.TokenType.GLOBAL);
 
         Map<String, Object> res = new HashMap<>();
         res.put("type", "Bearer");
         res.put("global_token", token);
+        res.put("expires_in", expiresIn);
+
+        return res;
+    }
+
+    public Map<String, Object> createTokenAccess(UserJwt payload) {
+        String token = jwtUtil.generateAccessToken((String) payload.getId(), payload);
+        Long expiresIn = jwtUtil.getExpiresInSeconds(JwtUtil.TokenType.ACCESS);
+
+        Map<String, Object> res = new HashMap<>();
+        res.put("type", "Bearer");
+        res.put("access_token", token);
+        res.put("expires_in", expiresIn);
+
+        return res;
+    }
+
+    public Map<String, Object> createTokenRefresh(UserJwt payload) {
+        String token = jwtUtil.generateRefreshToken((String) payload.getId(), payload);
+        Long expiresIn = jwtUtil.getExpiresInSeconds(JwtUtil.TokenType.REFRESH);
+
+        Map<String, Object> res = new HashMap<>();
+        res.put("type", "Bearer");
+        res.put("refresh_token", token);
         res.put("expires_in", expiresIn);
 
         return res;

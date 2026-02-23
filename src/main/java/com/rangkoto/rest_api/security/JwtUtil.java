@@ -54,27 +54,27 @@ public class JwtUtil {
     /**
      * Generate Access Token
      */
-    public String generateAccessToken(String username, UserJwt userJwt) {
+    public String generateAccessToken(String id, UserJwt userJwt) {
         Map<String, Object> claims = new HashMap<>();
         if (userJwt != null) {
             claims.put("email", userJwt.getEmail());
             claims.put("roles", userJwt.getRoles());
             claims.put("user", userJwt);
         }
-        return generateToken(username, claims, ACCESS_TOKEN_EXP_MS, accessKey);
+        return generateToken(id, claims, ACCESS_TOKEN_EXP_MS, accessKey);
     }
 
     /**
      * Generate Refresh Token
      */
-    public String generateRefreshToken(String username, UserJwt userJwt) {
+    public String generateRefreshToken(String id, UserJwt userJwt) {
         Map<String, Object> claims = new HashMap<>();
         if (userJwt != null) {
             claims.put("email", userJwt.getEmail());
             claims.put("roles", userJwt.getRoles());
             claims.put("user", userJwt);
         }
-        return generateToken(username, claims, REFRESH_TOKEN_EXP_MS, refreshKey);
+        return generateToken(id, claims, REFRESH_TOKEN_EXP_MS, refreshKey);
     }
 
     /**
@@ -82,9 +82,10 @@ public class JwtUtil {
      */
     private String generateToken(String subject, Map<String, Object> claims, long expirationMs, SecretKey key) {
         if (claims == null) claims = new HashMap<>();
+        claims.put("sub", subject);
+        System.out.println("sub " + subject);
         return Jwts.builder()
                 .setHeaderParam("typ", "JWT")
-                .setSubject(subject)
                 .setClaims(claims)
                 .setIssuedAt(new Date())
                 .setIssuer(issuer)

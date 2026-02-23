@@ -1,13 +1,18 @@
 package com.rangkoto.rest_api.modules.auth.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class LoginRequest {
+public class RegisterRequest {
+    @NotBlank(message = "Name must not be blank")
+    @Size(min = 2, max = 50, message = "Name must be between 2 and 50 characters")
+    private String name;
+
     @NotBlank(message = "Email must not be blank")
-    @Size(min = 3, max = 100, message = "Email must be between 3 and 100 characters")
+    @Email(message = "Email must be a valid email")
     private String email;
 
     @NotBlank(message = "Password must not be blank")

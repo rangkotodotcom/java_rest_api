@@ -37,8 +37,7 @@ public class UserController {
     @PutMapping("/{id}")
     public ResponseEntity<User> update(@PathVariable Long id, @RequestBody User u) {
         return service.getById(id).map(user -> {
-            user.setUsername(u.getUsername());
-            user.setEmail(u.getEmail());
+            user.setName(u.getName());
             return ResponseEntity.ok(service.save(user));
         }).orElse(ResponseEntity.notFound().build());
     }
